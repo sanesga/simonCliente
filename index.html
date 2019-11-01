@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Simon -Sandra Esplugues-</title>
+</head>
+<style>
+  #amarillo {
+    background-color: #B5A509;
+    border-radius: 0px 70px 0px 0px;
+  }
+  #azul {
+    background-color: #0D589F;
+    border-radius: 0px 0px 70px 0px;
+  }
+  body{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  }
+  #boton{
+    height: 50px;
+    width: 100px;
+    border-radius: 20px;
+    background-color: grey;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  h1,div,p {
+    text-align: center;
+  }
+  #mensajes{
+    color:red;
+  }
+  #rojo {
+    background-color:#B83F00;
+    border-radius: 70px 0px 0px 0px;
+  }
+  table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 400px;
+    height: 400px;
+  }
+  #verde {
+    background-color: #208709;
+    border-radius: 0px 0px 0px 70px;
+  }
+</style>
+
+<body>
+  <h1>Juego Simon dice</h1>
+  <p>Repite la secuencia de colores</p>
+  <div><b>NIVEL</b> <span id="nivel"></span></div>
+  <br><br>
+  <table>
+    <tr>
+      <td id="rojo"></td>
+      <td id="amarillo"></td>
+    </tr>
+    <tr>
+      <td id="verde"></td>
+      <td id="azul"></td>
+    </tr>
+  </table>
+  <div id="foot">
+    <br>
+  <input id="boton" type="button" value="START">
+  <p id="mensajes"></p>
+</div>
+  <script src="index.js"></script>
+</body>
+</html>
