@@ -7,15 +7,17 @@ var verde = document.getElementById("verde");
 var amarillo = document.getElementById("amarillo");
 var azul = document.getElementById("azul");
 var mensajes = document.getElementById("mensajes");
+var errores = document.getElementById("errores");
 
 //variables
 var nivel = 0;
 var colorActual = new String();
 var colores = ["rojo", "amarillo", "verde", "azul"];
 var patron = new Array();
-var contador = -1;
+var contador =0;
 var posicion = new Number();
 let i = new Number();
+var total=0;
 
 //listeners
 boton.addEventListener("click", juegaMaquina); //al hacer click sobre el botón iniciamos el juego
@@ -25,10 +27,13 @@ verde.addEventListener("click", juegaUsuario);
 amarillo.addEventListener("click", juegaUsuario);
 /////////////////////////////////////////////////////////
 
-//------------------------MÁQUINA-----------------------
+
+
+
+//************************************MÁQUINA**************************************
 
 function juegaMaquina() {
-  //mientras juega la máquina, deshabilitamos todos los clicks de los colores
+mensajes.innerHTML="Turno de la máquina";  //mientras juega la máquina, deshabilitamos todos los clicks de los colores
   rojo.style.pointerEvents = "none";
   azul.style.pointerEvents = "none";
   amarillo.style.pointerEvents = "none";
@@ -45,11 +50,12 @@ function juegaMaquina() {
     (function(i) {
       setTimeout(function() {
         colorear(patron[i]);
+        console.log("esperamos 1500 ms");
       }, 1500 * (i + 1));
     })(i);
   }
-  if (i == patron.length) {
-    console.log(i);
+  //if (i == patron.length) {
+    //console.log(i);
     console.log(patron.length);
     setTimeout(function() {
       mensajes.innerHTML = "Tu turno";
@@ -57,32 +63,41 @@ function juegaMaquina() {
       azul.style.pointerEvents = "auto";
       amarillo.style.pointerEvents = "auto";
       verde.style.pointerEvents = "auto";
-    }, 3000 * patron.length);
-  }
+    }, 2200 * patron.length);
+  //}
 }
 
-//-------------------------JUGADOR-----------------------
+//*************************************JUGADOR**************************************
 
 function juegaUsuario() {
+//console.log("usuario " + this.id);
+// console.log("maquina " + patron[contador]);
+// console.log("length de patron " + patron.length);
 
-  mensajes.innerHTML="";
+  borrarMensajes();
   if (this.id == patron[contador]) {
-    console.log("usuario " + this.id);
-    console.log("maquina " + patron[contador]);
     colorear(this.id);
     contador++;
     if(contador==patron.length){
+      subirNivel();
+      mensajes.innerHTML="Patrón correcto. Subimos al nivel " + nivel;
+      contador=0;
       juegaMaquina();
-      contador=-1;    
     }
   } else {
+    errores.innerHTML = "Color erróneo. Has perdido.";
     finJuego();
   }
 
 }
 function finJuego() {
-  mensajes.innerHTML = "Color erróneo. Has perdido.";
-  habilitarbBotonStart();
+  setTimeout(function(){
+    habilitarbBotonStart();
+    borrarMensajes();
+    patron=[];
+    nivel=0;
+    contador=0;
+  },2000);
 }
 function deshabilitarBotonStart() {
   boton.style.display = "none";
@@ -96,33 +111,43 @@ function subirNivel() {
 function generarNumeroAleatorio() {
   posicion = Math.floor(Math.random() * 3);
 }
+function borrarMensajes(){
+  mensajes.innerHTML="";
+}
 function colorear(elemento) {
   switch (elemento) {
     case "rojo":
-      console.log("rojo");
+      //console.log("colorear rojo");
       rojo.style.backgroundColor = "#FF5900";
       setTimeout(function() {
+        console.log("esperamos 700 ms");
         rojo.style.backgroundColor = "#B24207";
       }, 700);
       break;
     case "azul":
-      console.log("azul");
+      //console.log("colorear azul");
       azul.style.backgroundColor = "#6FDEFF";
       setTimeout(function() {
+        console.log("esperamos 700 ms");
+
         azul.style.backgroundColor = "#0D589F";
       }, 700);
       break;
     case "verde":
-      console.log("verde");
+      //console.log("colorear verde");
       verde.style.backgroundColor = "#7DFF28";
       setTimeout(function() {
+        console.log("esperamos 700 ms");
+
         verde.style.backgroundColor = "#208709";
       }, 700);
       break;
     case "amarillo":
-      console.log("amarillo");
+      //console.log("colorear amarillo");
       amarillo.style.backgroundColor = "#FFF520";
       setTimeout(function() {
+        console.log("esperamos 700 ms");
+
         amarillo.style.backgroundColor = "#B5A509";
       }, 700);
       break;
