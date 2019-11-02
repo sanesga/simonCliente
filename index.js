@@ -1,113 +1,143 @@
 ////////////////////////////////////////////////////////
 //elementos
-var nivelElement = document.getElementById("nivel"); //span del nivel
+var nivelElement = document.getElementById("nivel");
 var start = document.getElementById("start");
 var rojo = document.getElementById("rojo");
 var verde = document.getElementById("verde");
 var amarillo = document.getElementById("amarillo");
 var azul = document.getElementById("azul");
-var mensajes = document.getElementById("mensajes");
-var errores = document.getElementById("errores");
+var texto = document.getElementById("texto");
 
 //variables
 var nivel = 0;
-var colorActual = new String();
 var colores = ["rojo", "amarillo", "verde", "azul"];
 var patron = new Array();
-var contador =0;
+var contador = 0;
 var posicion = new Number();
 let i = new Number();
-var total=0;
-var porcentaje=0;
-var primero=false;
-
+var primero = false;
 
 //listeners
-start.addEventListener("click", juegaMaquina); //al hacer click sobre el botón iniciamos el juego
+start.addEventListener("click", juegaMaquina);
 rojo.addEventListener("click", juegaUsuario);
 azul.addEventListener("click", juegaUsuario);
 verde.addEventListener("click", juegaUsuario);
 amarillo.addEventListener("click", juegaUsuario);
 /////////////////////////////////////////////////////////
 
+//SE HAN REAJUSTADO LOS TIEMPOS DEL JUEGO PARA PODER MOSTRAR CORRECTAMENTE LOS MENSAJES INFORMATIVOS.
 
 //************************************MÁQUINA**************************************
 
 function juegaMaquina() {
- 
-mensajes.innerHTML="Turno de la máquina";  //mientras juega la máquina, deshabilitamos todos los clicks de los colores
-  rojo.style.pointerEvents = "none";
-  azul.style.pointerEvents = "none";
-  amarillo.style.pointerEvents = "none";
-  verde.style.pointerEvents = "none";
+  //escribe texto, 1 para mensajes normales, en color negro y 0 para mensajes de error, en color rojo.
+  escribirTexto("Turno de la máquina", 1);
+
+  //los jugadores no podrán hacer click mientras la máquina muestre el patrón
+  deshabilitarClickJugador();
 
   deshabilitarBotonStart();
+
   nivelElement.innerHTML = nivel;
 
   generarNumeroAleatorio();
+
   patron.push(colores[posicion]);
+
+  //nos permite ver el patrón en la consola para facilitar el desarrollo.
   console.log("patron " + patron);
 
-
+  //recorremos el patrón formado
   for (i = 0; i < patron.length; i++) {
-
+    //para que el setTimeout se ejecute como se espera dentro de un bucle, es necesario crear un IIFE (o función autoejecutable),
+    //esto son funciones que se ejecutan en cuanto se definen, sin esta función el setTimeOut no puede acceder a cada iteración de i.
+    //info --> https://codehandbook.org/understanding-settimeout-inside-for-loop-in-javascript/
     (function(i) {
-      if(!primero){
-        colorear(patron[i]);
-        primero=true;
-      }else{
+      //la primera vez, no aplicamos el tiempo entre colores, porque sólo hay uno.
+      if (!primero) {
+        colorear(patron[i], 700);
+        primero = true;
+      } else {
+        //aplica tiempo entre colores y colorea.
         setTimeout(function() {
-          colorear(patron[i]);
-          console.log("esperamos 1500 ms");
+          colorear(patron[i], 700);
         }, 1500 * (i + 1));
       }
     })(i);
   }
- 
-    console.log(patron.length);
 
-   
-    setTimeout(function() {
-      mensajes.innerHTML = "Tu turno";
-      rojo.style.pointerEvents = "auto";
-      azul.style.pointerEvents = "auto";
-      amarillo.style.pointerEvents = "auto";
-      verde.style.pointerEvents = "auto";
-    }, (2350 * patron.length)-(((2350*patron.length)*20)/100));
-
+  setTimeout(function() {
+    escribirTexto("Tu turno", 1);
+    habilitarClickJugador();
+  }, 2350 * patron.length - (2350 * patron.length * 20) / 100);
+  //ESTE TIEMPO SE UTILIZA PARA MOSTRAR EL MENSAJE "TU TURNO" Y HABILITAR EL CLICK DE LOS COLORES PARA EL JUGADOR.
+  //Tiempo que tarda el setTimeout por cada color (2350 ms) * número de colores (patron.length).
+  //A este tiempo, le restamos un 20%, ya que, a cada nivel, el tiempo aumenta, pero al tener varios threads en ejecución
+  //(tenemos dos niveles de anidación de threads dentro de un for), algunos tiempos se solapan, es decir, se pierden, de manera que hay que ir
+  //restando un porcentaje al tiempo de espera para que se muestre el mensaje y se habilite el click justo cuando
+  //todos los hilos de ejecución hayan terminado.
 }
 
 //*************************************JUGADOR**************************************
 
+//ENTRA CADA VEZ QUE SE HACE CLICK, SI NO SE HACE CLICK, QUEDA EN ESPERA Y NO HACE NADA.
 function juegaUsuario() {
+  borrarTexto();
 
-  borrarMensajes();
+  //si nuestro click es igual al color
   if (this.id == patron[contador]) {
-    click(this.id);
+
+    //coloreamos
+    colorear(this.id, 150);
+
+    //pasamos a la siguiente posicion del array
     contador++;
-    if(contador==patron.length){
+
+    // cuando hayamos recorrido el array correctamente, pasa a jugar la máquina.
+    if (contador == patron.length) {
+      
       subirNivel();
-     // setTimeout(function(){
-       // mensajes.innerHTML="Patrón correcto. Subimos al nivel " + nivel;
-     // }, 2000);
-      contador=0;
-      juegaMaquina();
+
+      escribirTexto("Patrón correcto. Subimos al nivel " + nivel, 1);
+
+      //reiniciamos el contador del array, para empezar de 0 la próxima vez.
+      contador = 0;
+
+      //hacemos una espera para que se pueda leer primero el texto anterior, y luego pase a jugar la máquina.
+      setTimeout(function() {
+        juegaMaquina();
+      }, 2000);
     }
+    //si nos equivocamos de color
   } else {
-    errores.innerHTML = "Color erróneo. Has perdido.";
+    escribirTexto(
+      "Color erróneo. Has perdido. Has llegado hasta el nivel " + nivel + ".",
+      0
+    );
     finJuego();
   }
-
 }
 function finJuego() {
-  setTimeout(function(){
+  //hacemos una espera, para que se pueda leer el último mensaje.
+  setTimeout(function() {
+    borrarTexto();
     habilitarbBotonStart();
-    borrarMensajes();
-    borrarErrores();
-    patron=[];
-    nivel=0;
-    contador=0;
-  },2000);
+    patron = [];
+    nivel = 0;
+    contador = 0;
+  }, 2000);
+}
+function deshabilitarClickJugador() {
+  rojo.style.pointerEvents = "none";
+  azul.style.pointerEvents = "none";
+  amarillo.style.pointerEvents = "none";
+  verde.style.pointerEvents = "none";
+}
+function habilitarClickJugador() {
+  rojo.style.pointerEvents = "auto";
+  azul.style.pointerEvents = "auto";
+  amarillo.style.pointerEvents = "auto";
+  verde.style.pointerEvents = "auto";
 }
 function deshabilitarBotonStart() {
   start.style.display = "none";
@@ -119,92 +149,58 @@ function subirNivel() {
   nivel++;
 }
 function generarNumeroAleatorio() {
-  posicion = Math.floor(Math.random() * 3);
+  posicion = Math.floor(Math.random() * 4);
 }
-function borrarMensajes(){
-  mensajes.innerHTML="";
+function borrarTexto() {
+  texto.innerHTML = "";
 }
-function borrarErrores(){
-  errores.innerHTML="";
-}
-
-function colorear(elemento) {
-  switch (elemento) {
-    case "rojo":
-      //console.log("colorear rojo");
-      rojo.style.backgroundColor = "#FF5900";
-      rojo.style.transform="scale(1.3)";
-      setTimeout(function() {
-        console.log("esperamos 700 ms");
-        rojo.style.backgroundColor = "#B24207";
-        rojo.style.transform="scale(1)";
-      }, 700);
-      break;
-    case "azul":
-      //console.log("colorear azul");
-      azul.style.backgroundColor = "#6FDEFF";
-      setTimeout(function() {
-        console.log("esperamos 700 ms");
-
-        azul.style.backgroundColor = "#0D589F";
-      }, 700);
-      break;
-    case "verde":
-      //console.log("colorear verde");
-      verde.style.backgroundColor = "#7DFF28";
-      setTimeout(function() {
-        console.log("esperamos 700 ms");
-
-        verde.style.backgroundColor = "#208709";
-      }, 700);
-      break;
-    case "amarillo":
-      //console.log("colorear amarillo");
-      amarillo.style.backgroundColor = "#FFF520";
-      setTimeout(function() {
-        console.log("esperamos 700 ms");
-
-        amarillo.style.backgroundColor = "#B5A509";
-      }, 700);
-      break;
+function escribirTexto(mensaje, codigo) {
+  //es un mensaje normal
+  if (codigo == 1) {
+    texto.style.color = "#000000";
+    texto.innerHTML = mensaje;
+    //es un mensaje de error
+  } else {
+    texto.style.color = "#FF0000";
+    texto.innerHTML = mensaje;
   }
 }
-function click(elemento) {
+function colorear(elemento, tiempo) {
+  var colorClaro = new String();
+  var colorOscuro = new String();
+
   switch (elemento) {
     case "rojo":
-      //console.log("colorear rojo");
-      rojo.style.backgroundColor = "#FF5900";
-      setTimeout(function() {
-        console.log("esperamos 150 ms");
-        rojo.style.backgroundColor = "#B24207";
-      }, 150);
+      colorClaro = "#FF0000";
+      colorOscuro = "#820404";
+      elemento = rojo;
       break;
     case "azul":
-      //console.log("colorear azul");
-      azul.style.backgroundColor = "#6FDEFF";
-      setTimeout(function() {
-        console.log("esperamos 150 ms");
-
-        azul.style.backgroundColor = "#0D589F";
-      }, 150);
+      colorClaro = "#00AAFF";
+      colorOscuro = "#044575";
+      elemento = azul;
       break;
     case "verde":
-      //console.log("colorear verde");
-      verde.style.backgroundColor = "#7DFF28";
-      setTimeout(function() {
-        console.log("esperamos 150 ms");
-
-        verde.style.backgroundColor = "#208709";
-      }, 150);
+      colorClaro = "#32FF00";
+      colorOscuro = "#3B6F04";
+      elemento = verde;
       break;
     case "amarillo":
-      //console.log("colorear amarillo");
-      amarillo.style.backgroundColor = "#FFF520";
-      setTimeout(function() {
-        console.log("esperamos 150 ms");
-
-        amarillo.style.backgroundColor = "#B5A509";
-      }, 150);
+      colorClaro = "#FFEC00";
+      colorOscuro = "#998D06";
+      elemento = amarillo;
       break;
   }
+  //aclaramos el color
+  elemento.style.backgroundColor = colorClaro;
+  //agrandamos
+  elemento.style.transform = "scale(1.1)";
+  //añadimos sombra
+  elemento.style.boxShadow = "10px 5px 5px grey";
+  //hacemos la espera y reseteamos los estilos.
+  setTimeout(function() {
+    elemento.style.backgroundColor = colorOscuro;
+    elemento.style.transform = "scale(1)";
+    elemento.style.boxShadow = "none";
+  }, tiempo);
 }
